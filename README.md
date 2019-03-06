@@ -2,17 +2,19 @@
 1. Install the Arduino IDE and Teensydruino: https://www.pjrc.com/teensy/teensyduino.html
 2. pull this repository, root file is refered to as /auto-dog-toy for the remainder of the docs
 3. In the Arduino IDE, go to File -> Preferences -> Sketchbook tab -> Sketchbook Location and set it to /auto-dog-toy
-4. You should now be able to open up .ino files, and #include library_name, and upload sketches to the board
+4. You should now be able to open up .ino files, #include library_name, and upload sketches to the board
 
 Note that you can always compile code without the board connected to catch compile time bugs.
 
 
 ## Directory structure
-auto-dog-toy
-    libraries
+```
+/auto-dog-toy
+    /libraries
         - contains library files, both custom and downloaded
+        - note library files are **checked in**. This is a bit easier for dependency management at the cost of a large repo.
         - each library file has the directory structure:
-            LibraryName
+            /LibraryName
                 library_header.h
                 library_source.cpp
     driver.ino
@@ -39,3 +41,4 @@ auto-dog-toy
             - SD card read/write
             - motor forward/reverse
             - bluetooth module
+```
