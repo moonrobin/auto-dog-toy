@@ -8,11 +8,11 @@ Note that you can always compile code without the board connected to catch compi
 
 
 ## Directory structure
-```/auto-dog-toy
-    /libraries
+auto-dog-toy
+    libraries
         - contains library files, both custom and downloaded
         - each library file has the directory structure:
-            /LibraryName
+            LibraryName
                 library_header.h
                 library_source.cpp
     driver.ino
@@ -39,4 +39,3 @@ Note that you can always compile code without the board connected to catch compi
             - SD card read/write
             - motor forward/reverse
             - bluetooth module
-```
