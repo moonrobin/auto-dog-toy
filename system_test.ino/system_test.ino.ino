@@ -7,8 +7,11 @@
 Adafruit_AMG88xx amg;
 Adafruit_LSM9DS1 lsm = Adafruit_LSM9DS1();
 
-int pin_prox_front = 13;
+int pin_led = 13;
+int pin_prox_front = 12;
 int pin_prox_back = 14;
+int front_obst;
+int back_obst;
 
 // Add these in when we hook up the motors
 int pin_lmotor_forwards;
@@ -50,6 +53,9 @@ void setup() {
     pinMode(pin_prox_front, INPUT);
     pinMode(pin_prox_back, INPUT); 
 
+    pinMode(pin_led, OUTPUT);
+    digitalWrite(pin_led, HIGH);
+
     delay(100); // let sensors boot up
 }
 
@@ -87,6 +93,10 @@ void loop() {
 
     Serial.println();
 
+    back_obst = digitalRead(pin_prox_back);
+    front_obst = digitalRead(pin_prox_front);
+    Serial.print("Obstacle front: "); Serial.println(front_obst);
+    Serial.print("Obstacle back: "); Serial.println(back_obst);
 }
 
 
