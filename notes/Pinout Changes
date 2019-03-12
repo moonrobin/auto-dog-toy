@@ -1,0 +1,14 @@
+Pinout Changes
+
+Soft mapping:
+Motor 1:
+    - In 1: 18
+    - In 2: 19
+    - Enable: 20 (PWM)
+
+
+Hard mapping:
+    - I2C -> Merge wires
+    - Motor cross wires
+    - PIR prox -> pin 13 to 12
+    - Pin 38/39 don't solder (Accel I2C merger)
