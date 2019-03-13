@@ -26,7 +26,7 @@ void MotorInterface::stop()
     digitalWrite(_r_enable, LOW);
 }
 
-void MotorInterface::forward(float turn = 0)
+void MotorInterface::forward(float turn)
 {   
     digitalWrite(_l_forward, HIGH);
     digitalWrite(_l_backward, LOW);

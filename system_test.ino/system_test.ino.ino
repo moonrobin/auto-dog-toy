@@ -8,7 +8,7 @@ Adafruit_AMG88xx amg;
 Adafruit_LSM9DS1 lsm = Adafruit_LSM9DS1();
 
 int pin_led = 13;
-int pin_prox_front = 12;
+int pin_prox_front = 25;
 int pin_prox_back = 14;
 int front_obst;
 int back_obst;
@@ -62,36 +62,36 @@ void setup() {
 float heat[AMG88xx_PIXEL_ARRAY_SIZE];
 
 void loop() { 
-    amg.readPixels(heat);
-    Serial.println("IR Camera Reading:");
-    Serial.print("[");
-    for(int i=0; i<AMG88xx_PIXEL_ARRAY_SIZE; i++){
-        Serial.print(heat[i]);
-        Serial.print(", ");
-        if( (i+1)%8 == 0 ) {
-            Serial.println();
-        }
-    }
-    Serial.println("]");
-    Serial.println();
+//    amg.readPixels(heat);
+//    Serial.println("IR Camera Reading:");
+//    Serial.print("[");
+//    for(int i=0; i<AMG88xx_PIXEL_ARRAY_SIZE; i++){
+//        Serial.print(heat[i]);
+//        Serial.print(", ");
+//        if( (i+1)%8 == 0 ) {
+//            Serial.println();
+//        }
+//    }
+//    Serial.println("]");
+//    Serial.println();
 
-    lsm.read();  /* ask it to read in the data */ 
-    sensors_event_t a, m, g, temp;
-    lsm.getEvent(&a, &m, &g, &temp); 
-    Serial.println("IR Camera Reading:");
-    Serial.print("Accel X: "); Serial.print(a.acceleration.x); Serial.print(" m/s^2");
-    Serial.print("\tY: "); Serial.print(a.acceleration.y);     Serial.print(" m/s^2 ");
-    Serial.print("\tZ: "); Serial.print(a.acceleration.z);     Serial.println(" m/s^2 ");
-
-    Serial.print("Mag X: "); Serial.print(m.magnetic.x);   Serial.print(" gauss");
-    Serial.print("\tY: "); Serial.print(m.magnetic.y);     Serial.print(" gauss");
-    Serial.print("\tZ: "); Serial.print(m.magnetic.z);     Serial.println(" gauss");
-
-    Serial.print("Gyro X: "); Serial.print(g.gyro.x);   Serial.print(" dps");
-    Serial.print("\tY: "); Serial.print(g.gyro.y);      Serial.print(" dps");
-    Serial.print("\tZ: "); Serial.print(g.gyro.z);      Serial.println(" dps");
-
-    Serial.println();
+//    lsm.read();  /* ask it to read in the data */ 
+//    sensors_event_t a, m, g, temp;
+//    lsm.getEvent(&a, &m, &g, &temp); 
+//    Serial.println("Accel Reading:");
+//    Serial.print("Accel X: "); Serial.print(a.acceleration.x); Serial.print(" m/s^2");
+//    Serial.print("\tY: "); Serial.print(a.acceleration.y);     Serial.print(" m/s^2 ");
+//    Serial.print("\tZ: "); Serial.print(a.acceleration.z);     Serial.println(" m/s^2 ");
+//
+//    Serial.print("Mag X: "); Serial.print(m.magnetic.x);   Serial.print(" gauss");
+//    Serial.print("\tY: "); Serial.print(m.magnetic.y);     Serial.print(" gauss");
+//    Serial.print("\tZ: "); Serial.print(m.magnetic.z);     Serial.println(" gauss");
+//
+//    Serial.print("Gyro X: "); Serial.print(g.gyro.x);   Serial.print(" dps");
+//    Serial.print("\tY: "); Serial.print(g.gyro.y);      Serial.print(" dps");
+//    Serial.print("\tZ: "); Serial.print(g.gyro.z);      Serial.println(" dps");
+//
+//    Serial.println();
 
     back_obst = digitalRead(pin_prox_back);
     front_obst = digitalRead(pin_prox_front);
