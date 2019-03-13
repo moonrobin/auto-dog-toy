@@ -23,10 +23,26 @@ class ViewController: UIViewController, UITextViewDelegate {
 
     @IBOutlet weak var thatlabel: UILabel!
     var dataCharacteristic : Characteristic?
+
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    @IBOutlet weak var mybutton: UIButton!
     
     
-    @IBOutlet weak var aaahhh: UILabel!
-    
+    @IBOutlet weak var readButton: UIButton!
+
+    @IBAction func onModeChange(_ sender: UISegmentedControl) {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            thatlabel.text = "avoid"
+            write(0)
+        case 1:
+            thatlabel.text = "chase"
+            write(1)
+        default:
+            break
+        }
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -46,9 +62,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             switch state {
             case .poweredOn:
                 DispatchQueue.main.async {
-                    print("hello")
-                    self.aaahhh.text = "start scanning"
-                    print(self.aaahhh.text!)
+                    print("start scanning")
                 }
                 //scan for peripherlas that advertise the ec00 service
                 return manager.startScanning(forServiceUUIDs: [serviceUUID])
@@ -96,9 +110,7 @@ class ViewController: UIViewController, UITextViewDelegate {
                 throw AppError.unknown
             }
             DispatchQueue.main.async {
-                print(p.identifier.uuidString)
-                self.aaahhh.text = "Found peripheral \(peripheral.identifier.uuidString). Trying to connect"
-                print(self.aaahhh.text!)
+                print("Found peripheral \(peripheral.identifier.uuidString). Trying to connect")
             }
             //connect to the peripheral in order to trigger the connected mode
             return peripheral.connect(connectionTimeout: 10, capacity: 5)
@@ -143,8 +155,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             }
             self.dataCharacteristic = dataCharacteristic
             DispatchQueue.main.async {
-                self.thatlabel.text = "Discovered characteristic \(dataCharacteristic.uuid.uuidString). COOL :)"
-                print(self.thatlabel.text!)
+                self.thatlabel.text = "Discovered characteristic \(dataCharacteristic.uuid.uuidString)."
             }
             //            DispatchQueue.main.async {
             // TODO: add some UI that indicates connection
@@ -169,6 +180,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             let s = String(data:data!, encoding: .utf8)
             DispatchQueue.main.async {
                 self.thatlabel.text = "notified value is \(String(describing: s))"
+                print(String(describing: s))
             }
         }
     
@@ -185,18 +197,16 @@ class ViewController: UIViewController, UITextViewDelegate {
                 break
             }
         }
-    
-    //write();
         
     }
-    
-//    @IBAction func onWriteTapped(_ sender: Any) {
-//        self.write()
-//    }
-//
-//    @IBAction func onRefreshTap(_ sender: Any) {
-//        self.read()
-//    }
+
+    @IBAction func mybuttontouch(_ sender: UIButton) {
+        if (sender == mybutton) {
+            write(1)
+        } else {
+            read()
+        }
+    }
     
     func read(){
         //read a value from the characteristic
@@ -213,18 +223,25 @@ class ViewController: UIViewController, UITextViewDelegate {
             self.thatlabel.text = "read error"
         }
     }
+    
+    func write(_ mode: integer_t){
+        var text:String;
+        if (mode == 0) {
+            text = "mode_avoid\r\n"
+        } else {
+            text = "mode_chase\r\n";
+        }
+        let writeType: CBCharacteristicWriteType = .withoutResponse
+        let writeFuture = self.dataCharacteristic?.write(data: text.data(using: .utf8)!, type: writeType)
+        writeFuture?.onSuccess(completion: { (_) in
+            print("wrote value " + text + "successfully")
+        })
+        writeFuture?.onFailure(completion: { (e) in
+            print("write failed")
+            print(e.localizedDescription)
+        })
+    }
 
-//    func write(){
-//        self.thatlabel.resignFirstResponder()
-//        let text = "okoksomethingsomething"
-//        //write a value to the characteristic
-//        let writeFuture = self.dataCharacteristic?.write(data:text.data(using: .utf8)!)
-//        writeFuture?.onSuccess(completion: { (_) in
-//            print("write succes")
-//        })
-//        writeFuture?.onFailure(completion: { (e) in
-//            print("write failed")
-//        })
-//    }
+
 
 }
