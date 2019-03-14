@@ -68,11 +68,12 @@ class ViewController: UIViewController, UITextViewDelegate {
         sessionPlayTime += 1
         totalPlayTime += 1
         self.updatePlayTimeLabels()
+        self.writeTotalPlayTime()
     }
 
     func updatePlayTimeLabels() {
         if (totalPlayTime > 60) {
-            self.totalPlayTimeLabel.text = String(format: "%.2f",totalPlayTime/60) + " h"
+            self.totalPlayTimeLabel.text = String(format: "%.2f",Double(totalPlayTime)/60.0) + " h"
         } else {
             self.totalPlayTimeLabel.text = String(totalPlayTime) + " min"
         }
@@ -136,12 +137,11 @@ class ViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var invisButton: UIButton!
     // every 3 seconds
     @objc func updateDistanceTravelled() {
-        //print("updating distance travelled...")
         let distanceTravelled = (0.5+drand48())*averageSpeedPerSec
         sessionDistanceTravelled += distanceTravelled
         totalDistanceTravelled += distanceTravelled
-        self.writeTotalDistanceTravelled()
         self.updateDistanceTravelledLabels()
+        self.writeTotalDistanceTravelled()
     }
     
     func updateDistanceTravelledLabels() {
@@ -177,18 +177,14 @@ class ViewController: UIViewController, UITextViewDelegate {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        self.timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.checkConnection), userInfo: nil, repeats: true)
+        self.initializeLabels()
         self.deviceDisconnected()
     }
 
     //the restore key allows to resuse the same central manager in future calls
     let manager = CentralManager(options: [CBCentralManagerOptionRestoreIdentifierKey : "CentralMangerKey" as NSString])
     func connect(){
-        self.timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.checkConnection), userInfo: nil, repeats: true)
-        self.initializeLabels()
-
-        self.readTotalPlayTime()
-        self.updatePlayTimeLabels()
-
         let serviceUUID = CBUUID(string: "FFE0")
         let characteristicUUID = CBUUID(string: "FFE1")
         var peripheral: Peripheral?
@@ -377,7 +373,4 @@ class ViewController: UIViewController, UITextViewDelegate {
             print(e.localizedDescription)
         })
     }
-
-
-
 }
