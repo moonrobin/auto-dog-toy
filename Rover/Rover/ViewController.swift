@@ -33,6 +33,10 @@ class ViewController: UIViewController, UITextViewDelegate {
     
     @IBOutlet weak var totalPlayTimeLabel: UILabel!
 
+    @IBOutlet weak var sessionDistanceLabel: UILabel!
+    
+    @IBOutlet weak var totalDistanceLabel: UILabel!
+    
     @IBOutlet weak var spinwheel: UIActivityIndicatorView!
 
     @IBOutlet weak var dogPicture: UIImageView!
@@ -66,7 +70,11 @@ class ViewController: UIViewController, UITextViewDelegate {
     }
 
     func updatePlayTimeLabels() {
-        self.totalPlayTimeLabel.text = String(totalPlayTime) + " min"
+        if (totalPlayTime > 60) {
+            self.totalPlayTimeLabel.text = String(format: "%.2f",totalPlayTime/60) + " h"
+        } else {
+            self.totalPlayTimeLabel.text = String(totalPlayTime) + " min"
+        }
         self.sessionPlayTimeLabel.text = String(sessionPlayTime) + " min"
     }
 
@@ -80,26 +88,81 @@ class ViewController: UIViewController, UITextViewDelegate {
         defaults.set(totalPlayTime, forKey: "totalPlayTime")
     }
 
-    func onDeviceDisconnection() {
-        self.statusLabel.text = "Searching for Rover..."
-        self.spinwheel.startAnimating()
-        self.dogPicture.isHidden = true
-        // stop counting play time
-        self.timer = nil
-    }
-    
     func onDeviceConnection() {
         self.statusLabel.text = "Connected to Rover."
         self.spinwheel.stopAnimating()
         self.dogPicture.isHidden = false
         // start counting play time
         self.timer = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.updatePlayTime), userInfo: nil, repeats: true)
+        self.startCountingDistance()
+    }
+
+    func onDeviceDisconnection() {
+        self.statusLabel.text = "Searching for Rover..."
+        self.spinwheel.startAnimating()
+        self.dogPicture.isHidden = true
+        // stop counting play time
+        if (self.timer != nil) {
+            self.timer!.invalidate()
+            self.timer = nil
+        }
+        self.stopCountingDistance()
+    }
+    
+
+    
+    // fake data for demo purposes only
+    let averageSpeedPerSec = 0.9
+    var distanceTimer: Timer!
+    var sessionDistanceTravelled = 0.0
+    var totalDistanceTravelled = 0.0
+    @IBOutlet weak var invisButton: UIButton!
+    // every 3 seconds
+    @objc func updateDistanceTravelled() {
+        //print("updating distance travelled...")
+        let distanceTravelled = (0.5+drand48())*averageSpeedPerSec
+        sessionDistanceTravelled += distanceTravelled
+        totalDistanceTravelled += distanceTravelled
+        self.writeTotalDistanceTravelled()
+        self.updateDistanceTravelledLabels()
+    }
+    
+    func updateDistanceTravelledLabels() {
+        self.totalDistanceLabel.text = String(format: "%.2f",totalDistanceTravelled/1000) + " km"
+        self.sessionDistanceLabel.text = String(format: "%.2f",sessionDistanceTravelled) + " m"
+    }
+    
+    func readTotalDistanceTravelled() {
+        let defaults = UserDefaults.standard
+        totalDistanceTravelled = defaults.double(forKey: "totalDistanceTravelled")
+    }
+    
+    func writeTotalDistanceTravelled() {
+        let defaults = UserDefaults.standard
+        defaults.set(totalDistanceTravelled, forKey: "totalDistanceTravelled")
+    }
+    func startCountingDistance() {
+        self.distanceTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateDistanceTravelled), userInfo: nil, repeats: true)
+    }
+    func stopCountingDistance() {
+        if (self.distanceTimer != nil) {
+            self.distanceTimer!.invalidate()
+            self.distanceTimer = nil
+        }
+    }
+
+    func initializeLabels() {
+        self.readTotalPlayTime()
+        self.readTotalDistanceTravelled()
+        self.updatePlayTimeLabels()
+        self.updateDistanceTravelledLabels()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         self.onDeviceDisconnection()
+        self.initializeLabels()
 
         self.readTotalPlayTime()
         self.updatePlayTimeLabels()
@@ -248,11 +311,21 @@ class ViewController: UIViewController, UITextViewDelegate {
         }
         
     }
-
+    
+    @IBAction func invisButtonTouch(_ sender: Any) {
+        if (distanceTimer != nil) {
+            //print("stop counting")
+            self.stopCountingDistance()
+        } else {
+            //print("start counting")
+            self.startCountingDistance()
+        }
+    }
+    
     @IBAction func mybuttontouch(_ sender: UIButton) {
         if (sender == mybutton) {
             write(1)
-        } else {
+        } else if (sender == readButton) {
             read()
         }
     }

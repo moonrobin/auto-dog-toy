@@ -43,8 +43,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationDidFinishLaunching(_ application: UIApplication) {
         let defaults = UserDefaults.standard
-        let defaultValue = ["totalPlayTime" : 0]
+        let defaultValue = ["totalPlayTime" : 0, "totalDistanceTravelled": 0.0]
         defaults.register(defaults: defaultValue)
+        
     }
 
 }
