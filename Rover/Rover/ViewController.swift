@@ -4,6 +4,7 @@
 //
 //  Created by Group 42 on 12/03/2019.
 //
+
 import UIKit
 import BlueCapKit
 import CoreBluetooth
@@ -88,7 +89,21 @@ class ViewController: UIViewController, UITextViewDelegate {
         defaults.set(totalPlayTime, forKey: "totalPlayTime")
     }
 
-    func onDeviceConnection() {
+    var isConnected = false;
+    @objc func checkConnection() {
+        if (self.manager.isDisconnected == true){
+            if (isConnected) {
+                print("disconnected")
+                self.deviceDisconnected()
+            }
+        } else if (!isConnected){
+            print("connected")
+            self.deviceConnected()
+        }
+    }
+
+    func deviceConnected() {
+        self.isConnected = true;
         self.statusLabel.text = "Connected to Rover."
         self.spinwheel.stopAnimating()
         self.dogPicture.isHidden = false
@@ -97,7 +112,8 @@ class ViewController: UIViewController, UITextViewDelegate {
         self.startCountingDistance()
     }
 
-    func onDeviceDisconnection() {
+    func deviceDisconnected() {
+        self.isConnected = false;
         self.statusLabel.text = "Searching for Rover..."
         self.spinwheel.startAnimating()
         self.dogPicture.isHidden = true
@@ -107,12 +123,13 @@ class ViewController: UIViewController, UITextViewDelegate {
             self.timer = nil
         }
         self.stopCountingDistance()
+        connect()
     }
     
 
     
     // fake data for demo purposes only
-    let averageSpeedPerSec = 0.9
+    let averageSpeedPerSec = 0.7
     var distanceTimer: Timer!
     var sessionDistanceTravelled = 0.0
     var totalDistanceTravelled = 0.0
@@ -157,11 +174,16 @@ class ViewController: UIViewController, UITextViewDelegate {
         self.updatePlayTimeLabels()
         self.updateDistanceTravelledLabels()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        self.deviceDisconnected()
+    }
 
-        self.onDeviceDisconnection()
+    //the restore key allows to resuse the same central manager in future calls
+    let manager = CentralManager(options: [CBCentralManagerOptionRestoreIdentifierKey : "CentralMangerKey" as NSString])
+    func connect(){
+        self.timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.checkConnection), userInfo: nil, repeats: true)
         self.initializeLabels()
 
         self.readTotalPlayTime()
@@ -170,9 +192,6 @@ class ViewController: UIViewController, UITextViewDelegate {
         let serviceUUID = CBUUID(string: "FFE0")
         let characteristicUUID = CBUUID(string: "FFE1")
         var peripheral: Peripheral?
-
-        //the restore key allows to resuse the same central manager in future calls
-        let manager = CentralManager(options: [CBCentralManagerOptionRestoreIdentifierKey : "CentralMangerKey" as NSString])
 
         let stateChangeFuture = manager.whenStateChanges()
 
@@ -184,7 +203,7 @@ class ViewController: UIViewController, UITextViewDelegate {
                     print("start scanning")
                 }
                 //scan for peripherlas that advertise the ec00 service
-                return manager.startScanning(forServiceUUIDs: [serviceUUID])
+                return self.manager.startScanning(forServiceUUIDs: [serviceUUID])
             case .poweredOff:
                 print("powered off")
                 throw AppError.poweredOff
@@ -209,7 +228,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             case .invalidState:
                 break
             case .resetting:
-                manager.reset()
+                self.manager.reset()
             case .poweredOff:
                 break
             case .unknown:
@@ -222,7 +241,7 @@ class ViewController: UIViewController, UITextViewDelegate {
         //connect to the first scanned peripheral
         let connectionFuture = scanFuture.flatMap { p -> FutureStream<Void> in
             //stop the scan as soon as we find the first peripheral
-            manager.stopScanning()
+            self.manager.stopScanning()
             peripheral = p
             guard let peripheral = peripheral else {
                 throw AppError.unknown
@@ -268,7 +287,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             }
             self.dataCharacteristic = dataCharacteristic
             DispatchQueue.main.async {
-                self.onDeviceConnection()
+                self.deviceConnected()
                 print("Discovered characteristic \(dataCharacteristic.uuid.uuidString).")
             }
 
@@ -299,7 +318,6 @@ class ViewController: UIViewController, UITextViewDelegate {
         dataFuture.onFailure { error in
             switch error {
             case PeripheralError.disconnected:
-                print("attempt to reconnecct")
                 peripheral?.reconnect()
             case AppError.serviceNotFound:
                 break
@@ -321,7 +339,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             self.startCountingDistance()
         }
     }
-    
+
     @IBAction func mybuttontouch(_ sender: UIButton) {
         if (sender == mybutton) {
             write(1)
